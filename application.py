@@ -3,10 +3,18 @@ from flask import Flask, render_template_string, jsonify
 from datetime import datetime, timezone
 import os
 
-application = Flask(__name__)
+# ============================================================
+# CONFIGURATION
+# ============================================================
 
 GITHUB_REPO_URL = "https://github.com/your-username/your-repo-name"
 
+application = Flask(__name__)
+
+
+# ============================================================
+# HTML TEMPLATE
+# ============================================================
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
@@ -14,587 +22,377 @@ HTML_TEMPLATE = """
 
 <head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SLT-MOBITEL | IT Systems Dashboard</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <style>
+
+        /* =====================================================
+           GLOBAL
+        ===================================================== */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', Arial, sans-serif;
+            background: #f5f6f8;
+            color: #172033;
+        }
+
+        /* SLT-inspired colors */
+
+        :root {
+            --slt-red: #e30613;
+            --slt-dark-red: #bd0010;
+            --slt-navy: #172033;
+            --slt-blue: #17365d;
+            --border: #e5e7eb;
+            --background: #f5f6f8;
+        }
+
+
+        /* =====================================================
+           TOP BRAND BAR
+        ===================================================== */
+
+        .brand-line {
+            height: 5px;
+            background: linear-gradient(
+                90deg,
+                #e30613 0%,
+                #e30613 72%,
+                #172033 72%,
+                #172033 100%
+            );
+        }
+
+
+        /* =====================================================
+           HEADER
+        ===================================================== */
+
+        .main-header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .logo-slt {
+            color: #e30613;
+            font-size: 31px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+        }
+
+        .logo-mobitel {
+            color: #172033;
+            font-size: 27px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+
+        /* =====================================================
+           NAVIGATION
+        ===================================================== */
+
+        .nav-link {
+            color: #667085;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 0;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: #e30613;
+            border-bottom-color: #e30613;
+        }
+
+        .nav-link.active {
+            color: #e30613;
+            border-bottom-color: #e30613;
+        }
+
+
+        /* =====================================================
+           CARDS
+        ===================================================== */
+
+        .card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(16, 24, 40, 0.04);
+        }
 
-<title>SLT-MOBITEL | Enterprise IT Dashboard</title>
+        .card:hover {
+            box-shadow: 0 5px 18px rgba(16, 24, 40, 0.08);
+            transition: box-shadow 0.2s ease;
+        }
+
+
+        /* =====================================================
+           STAT CARDS
+        ===================================================== */
+
+        .stat-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 10px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
 
-<script src="https://cdn.tailwindcss.com"></script>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-rel="stylesheet">
+            background: #fff1f2;
+            color: #e30613;
 
-
-<style>
+            font-size: 20px;
+        }
 
-/* =========================================================
-   GLOBAL
-========================================================= */
+        .stat-number {
+            font-size: 30px;
+            line-height: 1;
+            font-weight: 800;
+            color: #172033;
+        }
 
-* {
-    box-sizing: border-box;
-}
 
-html {
-    scroll-behavior: smooth;
-}
+        /* =====================================================
+           STATUS
+        ===================================================== */
 
-body {
-    margin: 0;
-    font-family: 'Inter', sans-serif;
-    background: #070b14;
-    color: white;
-    overflow-x: hidden;
-}
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            background: #16a34a;
+            border-radius: 50%;
+        }
 
 
-/* =========================================================
-   ANIMATED BACKGROUND
-========================================================= */
+        /* =====================================================
+           PROGRESS BARS
+        ===================================================== */
 
-.background {
-    position: fixed;
-    inset: 0;
-    z-index: -10;
-    overflow: hidden;
+        .progress-container {
+            width: 100%;
+            height: 7px;
+            background: #edf0f2;
+            border-radius: 20px;
+            overflow: hidden;
+        }
 
-    background:
-        radial-gradient(
-            circle at 10% 20%,
-            rgba(227, 6, 19, 0.18),
-            transparent 30%
-        ),
-        radial-gradient(
-            circle at 85% 70%,
-            rgba(20, 80, 180, 0.20),
-            transparent 35%
-        ),
-        #070b14;
-}
+        .progress-red {
+            height: 100%;
+            background: #e30613;
+            border-radius: 20px;
+        }
 
+        .progress-blue {
+            height: 100%;
+            background: #315b88;
+            border-radius: 20px;
+        }
 
-/* Animated grid */
+        .progress-green {
+            height: 100%;
+            background: #16a34a;
+            border-radius: 20px;
+        }
 
-.grid-background {
-    position: absolute;
-    inset: 0;
 
-    background-image:
-        linear-gradient(
-            rgba(255,255,255,0.025) 1px,
-            transparent 1px
-        ),
-        linear-gradient(
-            90deg,
-            rgba(255,255,255,0.025) 1px,
-            transparent 1px
-        );
+        /* =====================================================
+           SERVICE STATUS
+        ===================================================== */
 
-    background-size: 45px 45px;
+        .service-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
 
-    animation: gridMove 18s linear infinite;
-}
+            padding: 14px 0;
 
-@keyframes gridMove {
+            border-bottom: 1px solid #eef0f2;
+        }
 
-    0% {
-        transform: translateY(0);
-    }
+        .service-row:last-child {
+            border-bottom: none;
+        }
 
-    100% {
-        transform: translateY(45px);
-    }
-}
 
+        /* =====================================================
+           TERMINAL
+        ===================================================== */
 
-/* =========================================================
-   FLOATING GLOW ORBS
-========================================================= */
+        .terminal {
+            background: #111827;
+            color: #d1d5db;
+            border-radius: 9px;
+            font-family: "Courier New", monospace;
+        }
 
-.orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(70px);
-    opacity: 0.35;
-}
 
-.orb-red {
-    width: 300px;
-    height: 300px;
-    background: #e30613;
+        /* =====================================================
+           BUTTONS
+        ===================================================== */
 
-    top: -100px;
-    left: -100px;
+        .primary-button {
+            display: block;
+            width: 100%;
 
-    animation: floatRed 8s ease-in-out infinite;
-}
+            background: #e30613;
+            color: white;
 
-.orb-blue {
-    width: 350px;
-    height: 350px;
-    background: #1769aa;
+            padding: 12px 18px;
 
-    right: -120px;
-    bottom: -120px;
+            border-radius: 8px;
 
-    animation: floatBlue 10s ease-in-out infinite;
-}
+            text-align: center;
 
-@keyframes floatRed {
+            font-size: 13px;
+            font-weight: 600;
 
-    0%,100% {
-        transform: translate(0,0);
-    }
+            transition: background 0.2s ease;
+        }
 
-    50% {
-        transform: translate(100px,80px);
-    }
-}
+        .primary-button:hover {
+            background: #bd0010;
+        }
 
-@keyframes floatBlue {
+        .secondary-button {
+            display: block;
+            width: 100%;
 
-    0%,100% {
-        transform: translate(0,0);
-    }
+            background: white;
+            color: #344054;
 
-    50% {
-        transform: translate(-100px,-70px);
-    }
-}
+            padding: 12px 18px;
 
+            border-radius: 8px;
 
-/* =========================================================
-   TOP RED LINE
-========================================================= */
+            text-align: center;
 
-.top-line {
+            font-size: 13px;
+            font-weight: 600;
 
-    height: 4px;
+            border: 1px solid #d0d5dd;
 
-    background:
-        linear-gradient(
-            90deg,
-            #e30613,
-            #ff2433,
-            #e30613,
-            #17365d,
-            #e30613
-        );
+            transition: background 0.2s ease;
+        }
 
-    background-size: 300% 100%;
+        .secondary-button:hover {
+            background: #f9fafb;
+        }
 
-    animation: gradientMove 5s linear infinite;
-}
 
-@keyframes gradientMove {
+        /* =====================================================
+           PROFILE
+        ===================================================== */
 
-    0% {
-        background-position: 0%;
-    }
+        .profile-avatar {
+            width: 56px;
+            height: 56px;
 
-    100% {
-        background-position: 300%;
-    }
-}
+            border-radius: 50%;
 
+            display: flex;
+            align-items: center;
+            justify-content: center;
 
-/* =========================================================
-   GLASS
-========================================================= */
+            background: #e30613;
+            color: white;
 
-.glass {
+            font-size: 17px;
+            font-weight: 700;
+        }
 
-    background:
-        linear-gradient(
-            135deg,
-            rgba(255,255,255,0.08),
-            rgba(255,255,255,0.025)
-        );
 
-    border: 1px solid rgba(255,255,255,0.09);
+        /* =====================================================
+           BADGES
+        ===================================================== */
 
-    backdrop-filter: blur(18px);
+        .badge-green {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
 
-    box-shadow:
-        0 20px 60px rgba(0,0,0,0.25);
+            padding: 5px 10px;
 
-    transition:
-        transform .35s ease,
-        border .35s ease,
-        box-shadow .35s ease;
-}
+            border-radius: 20px;
 
-.glass:hover {
+            background: #ecfdf3;
+            color: #027a48;
 
-    transform: translateY(-5px);
+            font-size: 11px;
+            font-weight: 600;
+        }
 
-    border-color:
-        rgba(227,6,19,0.45);
+        .badge-red {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
 
-    box-shadow:
-        0 25px 70px rgba(0,0,0,0.45),
-        0 0 30px rgba(227,6,19,0.08);
-}
+            padding: 5px 10px;
 
+            border-radius: 20px;
 
-/* =========================================================
-   ENTRY ANIMATION
-========================================================= */
+            background: #fff1f2;
+            color: #c01048;
 
-.fade-up {
+            font-size: 11px;
+            font-weight: 600;
+        }
 
-    opacity: 0;
 
-    transform: translateY(30px);
+        /* =====================================================
+           FOOTER
+        ===================================================== */
 
-    animation:
-        fadeUp .8s ease forwards;
-}
+        footer {
+            background: #172033;
+            color: #98a2b3;
+        }
 
-.delay-1 {
-    animation-delay: .15s;
-}
 
-.delay-2 {
-    animation-delay: .30s;
-}
+        /* =====================================================
+           MOBILE
+        ===================================================== */
 
-.delay-3 {
-    animation-delay: .45s;
-}
+        @media (max-width: 768px) {
 
-.delay-4 {
-    animation-delay: .60s;
-}
+            .logo-slt {
+                font-size: 26px;
+            }
 
-@keyframes fadeUp {
+            .logo-mobitel {
+                font-size: 22px;
+            }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+            .stat-number {
+                font-size: 27px;
+            }
 
+        }
 
-/* =========================================================
-   LOGO
-========================================================= */
-
-.logo-slt {
-
-    color: #ff2030;
-
-    font-size: 32px;
-
-    font-weight: 900;
-
-    letter-spacing: -2px;
-
-    text-shadow:
-        0 0 25px rgba(227,6,19,.35);
-}
-
-.logo-mobitel {
-
-    font-size: 27px;
-
-    font-weight: 700;
-
-    color: white;
-
-    letter-spacing: -1px;
-}
-
-
-/* =========================================================
-   STATUS
-========================================================= */
-
-.status-ring {
-
-    width: 12px;
-    height: 12px;
-
-    background: #22c55e;
-
-    border-radius: 50%;
-
-    box-shadow:
-        0 0 0 0 rgba(34,197,94,.6);
-
-    animation:
-        statusPulse 2s infinite;
-}
-
-@keyframes statusPulse {
-
-    70% {
-        box-shadow:
-            0 0 0 12px rgba(34,197,94,0);
-    }
-
-    100% {
-        box-shadow:
-            0 0 0 0 rgba(34,197,94,0);
-    }
-}
-
-
-/* =========================================================
-   NUMBER
-========================================================= */
-
-.stat-number {
-
-    font-size: 36px;
-
-    font-weight: 800;
-
-    background:
-        linear-gradient(
-            90deg,
-            white,
-            #ff4d59
-        );
-
-    -webkit-background-clip: text;
-
-    color: transparent;
-}
-
-
-/* =========================================================
-   PROGRESS
-========================================================= */
-
-.progress {
-
-    height: 7px;
-
-    background:
-        rgba(255,255,255,.08);
-
-    border-radius: 20px;
-
-    overflow: hidden;
-}
-
-.progress-bar {
-
-    height: 100%;
-
-    border-radius: 20px;
-
-    background:
-        linear-gradient(
-            90deg,
-            #e30613,
-            #ff5964
-        );
-
-    box-shadow:
-        0 0 15px rgba(227,6,19,.5);
-
-    animation:
-        progressGlow 2s ease-in-out infinite alternate;
-}
-
-@keyframes progressGlow {
-
-    from {
-        filter: brightness(1);
-    }
-
-    to {
-        filter: brightness(1.35);
-    }
-}
-
-
-/* =========================================================
-   TERMINAL
-========================================================= */
-
-.terminal {
-
-    background:
-        rgba(0,0,0,.55);
-
-    border:
-        1px solid rgba(255,255,255,.08);
-
-    font-family:
-        "Courier New",
-        monospace;
-
-    box-shadow:
-        inset 0 0 30px rgba(0,0,0,.4);
-}
-
-
-/* terminal blinking */
-
-.cursor {
-
-    display: inline-block;
-
-    width: 7px;
-    height: 15px;
-
-    background: #e30613;
-
-    animation:
-        blink 1s infinite;
-}
-
-@keyframes blink {
-
-    50% {
-        opacity: 0;
-    }
-}
-
-
-/* =========================================================
-   BUTTON
-========================================================= */
-
-.red-button {
-
-    background:
-        linear-gradient(
-            135deg,
-            #e30613,
-            #b8000d
-        );
-
-    box-shadow:
-        0 10px 30px rgba(227,6,19,.25);
-
-    transition:
-        all .3s ease;
-}
-
-.red-button:hover {
-
-    transform:
-        translateY(-3px)
-        scale(1.02);
-
-    box-shadow:
-        0 15px 40px rgba(227,6,19,.4);
-}
-
-
-/* =========================================================
-   ICON BOX
-========================================================= */
-
-.icon-box {
-
-    width: 48px;
-    height: 48px;
-
-    border-radius: 14px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    background:
-        rgba(227,6,19,.10);
-
-    border:
-        1px solid rgba(227,6,19,.18);
-
-    font-size: 22px;
-
-    transition:
-        transform .3s ease;
-}
-
-.glass:hover .icon-box {
-
-    transform:
-        rotate(8deg)
-        scale(1.1);
-}
-
-
-/* =========================================================
-   NAV
-========================================================= */
-
-.nav-item {
-
-    position: relative;
-
-    color: #9ca3af;
-
-    transition:
-        color .25s ease;
-}
-
-.nav-item:hover {
-
-    color: white;
-}
-
-.nav-item::after {
-
-    content: "";
-
-    position: absolute;
-
-    left: 0;
-    right: 0;
-
-    bottom: -10px;
-
-    height: 2px;
-
-    background: #e30613;
-
-    transform:
-        scaleX(0);
-
-    transition:
-        transform .25s ease;
-}
-
-.nav-item:hover::after {
-
-    transform:
-        scaleX(1);
-}
-
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-
-@media(max-width:768px) {
-
-    .logo-slt {
-        font-size: 25px;
-    }
-
-    .logo-mobitel {
-        font-size: 21px;
-    }
-
-    .stat-number {
-        font-size: 30px;
-    }
-
-}
-
-</style>
+    </style>
 
 </head>
 
@@ -602,1228 +400,1280 @@ body {
 <body>
 
 
-<!-- ========================================================
-     BACKGROUND
-========================================================= -->
+<!-- =========================================================
+     BRAND LINE
+========================================================== -->
 
-<div class="background">
-
-    <div class="grid-background"></div>
-
-    <div class="orb orb-red"></div>
-
-    <div class="orb orb-blue"></div>
-
-</div>
+<div class="brand-line"></div>
 
 
-<div class="top-line"></div>
-
-
-<!-- ========================================================
+<!-- =========================================================
      HEADER
-========================================================= -->
+========================================================== -->
 
-<header
-class="glass sticky top-0 z-50 border-t-0 rounded-none">
+<header class="main-header">
 
-<div class="max-w-7xl mx-auto px-6 py-4">
+    <div class="max-w-7xl mx-auto px-5 lg:px-8">
 
-<div class="flex justify-between items-center">
+        <div class="flex items-center justify-between py-4">
 
+            <!-- LOGO -->
 
-<!-- LOGO -->
+            <div class="flex items-center gap-4">
 
-<div class="flex items-center gap-3">
+                <div class="flex items-center">
 
-<div>
+                    <span class="logo-slt">
+                        SLT
+                    </span>
 
-<span class="logo-slt">
-SLT
-</span>
+                    <span class="mx-2 text-gray-300 text-xl">
+                        |
+                    </span>
 
-<span class="text-gray-500 mx-2">
-|
-</span>
+                    <span class="logo-mobitel">
+                        MOBITEL
+                    </span>
 
-<span class="logo-mobitel">
-MOBITEL
-</span>
+                </div>
 
-</div>
+                <div class="hidden md:block
+                            border-l border-gray-200
+                            pl-4">
 
-<div class="hidden md:block">
+                    <div class="text-[10px]
+                                uppercase
+                                tracking-wider
+                                text-gray-400">
 
-<div class="text-[10px]
-uppercase
-tracking-[3px]
-text-gray-500">
+                        Enterprise IT
 
-Enterprise Technology
+                    </div>
 
-</div>
+                    <div class="text-xs
+                                font-medium
+                                text-gray-600">
 
-<div class="text-xs text-gray-400">
+                        Systems & Infrastructure
 
-Infrastructure Operations
+                    </div>
 
-</div>
+                </div>
 
-</div>
-
-</div>
-
-
-<!-- USER -->
-
-<div class="flex items-center gap-4">
-
-<div class="hidden sm:block text-right">
-
-<div class="text-[10px]
-uppercase
-tracking-widest
-text-gray-500">
-
-SYSTEM USER
-
-</div>
-
-<div class="text-sm font-semibold">
-
-Prasad Wanigasooriya
-
-</div>
-
-</div>
+            </div>
 
 
-<div
-class="w-11 h-11 rounded-full
-bg-gradient-to-br
-from-red-500
-to-red-800
-flex items-center
-justify-center
-font-bold
-shadow-lg
-shadow-red-900/40">
+            <!-- USER -->
 
-PW
+            <div class="flex items-center gap-3">
 
-</div>
+                <div class="hidden sm:block text-right">
 
-</div>
+                    <div class="text-[10px]
+                                uppercase
+                                tracking-wider
+                                text-gray-400">
 
-</div>
+                        Logged in
+
+                    </div>
+
+                    <div class="text-sm
+                                font-semibold
+                                text-gray-800">
+
+                        Prasad Wanigasooriya
+
+                    </div>
+
+                </div>
+
+                <div class="profile-avatar">
+                    PW
+                </div>
+
+            </div>
+
+        </div>
 
 
-<!-- NAV -->
+        <!-- NAVIGATION -->
 
-<div class="hidden md:flex
-gap-8
-mt-5
-text-sm">
+        <div class="hidden md:flex items-center gap-8">
 
-<a href="/" class="nav-item">
-Dashboard
-</a>
+            <a href="/" class="nav-link active">
+                Dashboard
+            </a>
 
-<a href="/health" class="nav-item">
-Health
-</a>
+            <a href="/health" class="nav-link">
+                System Health
+            </a>
 
-<a href="#" class="nav-item">
-Servers
-</a>
+            <a href="#" class="nav-link">
+                Servers
+            </a>
 
-<a href="#" class="nav-item">
-Databases
-</a>
+            <a href="#" class="nav-link">
+                Databases
+            </a>
 
-<a href="#" class="nav-item">
-Virtualization
-</a>
+            <a href="#" class="nav-link">
+                Virtualization
+            </a>
 
-<a href="#" class="nav-item">
-Monitoring
-</a>
+            <a href="#" class="nav-link">
+                Monitoring
+            </a>
 
-</div>
+        </div>
 
-</div>
+        <div class="h-px bg-gray-100 mt-3"></div>
+
+    </div>
 
 </header>
 
 
-<!-- ========================================================
-     MAIN
-========================================================= -->
+<!-- =========================================================
+     MAIN CONTENT
+========================================================== -->
 
-<main class="max-w-7xl mx-auto px-6 py-10">
+<main class="max-w-7xl mx-auto px-5 lg:px-8 py-8">
 
 
-<!-- HERO -->
+    <!-- =====================================================
+         PAGE HEADER
+    ====================================================== -->
 
-<section class="fade-up mb-10">
+    <div class="flex flex-col
+                lg:flex-row
+                lg:items-center
+                lg:justify-between
+                gap-5
+                mb-7">
 
-<div class="flex flex-col lg:flex-row
-justify-between
-gap-8
-items-start
-lg:items-center">
+        <div>
 
+            <div class="text-xs
+                        uppercase
+                        tracking-wider
+                        text-gray-400
+                        mb-2">
 
-<div>
+                IT & SYSTEMS / DASHBOARD
 
-<div class="flex items-center gap-3 mb-3">
+            </div>
 
-<div class="status-ring"></div>
+            <h1 class="text-3xl
+                       font-bold
+                       text-gray-900">
 
-<span class="text-green-400
-text-xs
-font-semibold
-tracking-widest">
+                Infrastructure Overview
 
-ALL SYSTEMS OPERATIONAL
+            </h1>
 
-</span>
+            <p class="text-sm
+                      text-gray-500
+                      mt-2">
 
-</div>
+                Enterprise systems and infrastructure
+                monitoring dashboard
 
+            </p>
 
-<h1
-class="text-4xl md:text-6xl
-font-extrabold
-tracking-tight">
+        </div>
 
-Enterprise
 
-<span
-class="text-transparent
-bg-clip-text
-bg-gradient-to-r
-from-red-500
-to-red-300">
+        <!-- SYSTEM STATUS -->
 
-IT Infrastructure
+        <div class="card px-5 py-4
+                    flex items-center gap-3">
 
-</span>
+            <div class="status-dot"></div>
 
-</h1>
+            <div>
 
+                <div class="text-[10px]
+                            uppercase
+                            tracking-wider
+                            text-gray-400">
 
-<p class="text-gray-400
-mt-4
-max-w-2xl
-leading-7">
+                    System Status
 
-Real-time infrastructure overview
-for servers, databases, virtualization,
-backup and monitoring services.
+                </div>
 
-</p>
+                <div class="text-sm
+                            font-semibold
+                            text-green-600">
 
-</div>
+                    All Systems Operational
 
+                </div>
 
-<!-- LIVE CLOCK -->
+            </div>
 
-<div class="glass
-rounded-2xl
-px-6
-py-5
-min-w-[240px]">
+        </div>
 
-<div class="text-[10px]
-uppercase
-tracking-widest
-text-gray-500">
+    </div>
 
-Server Time
 
-</div>
+    <!-- =====================================================
+         STATISTICS
+    ====================================================== -->
 
-<div
-id="server-time"
-class="font-mono
-text-xl
-font-bold
-mt-2">
+    <div class="grid
+                grid-cols-1
+                sm:grid-cols-2
+                lg:grid-cols-4
+                gap-5
+                mb-6">
 
-{{ current_time }}
 
-</div>
+        <!-- SERVERS -->
 
-<div class="text-xs
-text-green-400
-mt-2">
+        <div class="card p-5">
 
-● LIVE UTC
+            <div class="flex
+                        items-start
+                        justify-between">
 
-</div>
+                <div>
 
-</div>
+                    <div class="text-xs
+                                uppercase
+                                tracking-wider
+                                text-gray-400">
 
-</div>
+                        Production Servers
 
-</section>
+                    </div>
 
+                    <div class="stat-number mt-3">
+                        48
+                    </div>
 
-<!-- ========================================================
-     STAT CARDS
-========================================================= -->
+                    <div class="text-xs
+                                text-green-600
+                                mt-3">
 
-<section
-class="grid
-grid-cols-1
-sm:grid-cols-2
-lg:grid-cols-4
-gap-5
-mb-7">
+                        ● 47 Online
 
+                    </div>
 
-<!-- SERVER -->
+                </div>
 
-<div class="glass rounded-2xl p-6
-fade-up delay-1">
+                <div class="stat-icon">
+                    🖥
+                </div>
 
-<div class="flex justify-between">
+            </div>
 
-<div>
+        </div>
 
-<div class="text-xs
-text-gray-500
-uppercase
-tracking-wider">
 
-Production Servers
+        <!-- DATABASE -->
 
-</div>
+        <div class="card p-5">
 
-<div class="stat-number mt-2">
+            <div class="flex
+                        items-start
+                        justify-between">
 
-48
+                <div>
 
-</div>
+                    <div class="text-xs
+                                uppercase
+                                tracking-wider
+                                text-gray-400">
 
-</div>
+                        Databases
 
-<div class="icon-box">
+                    </div>
 
-🖥️
+                    <div class="stat-number mt-3">
+                        26
+                    </div>
 
-</div>
+                    <div class="text-xs
+                                text-green-600
+                                mt-3">
 
-</div>
+                        ● All Healthy
 
-<div class="mt-5
-text-xs
-text-green-400">
+                    </div>
 
-● 47 Online
+                </div>
 
-</div>
+                <div class="stat-icon">
+                    🗄
+                </div>
 
-</div>
+            </div>
 
+        </div>
 
-<!-- DATABASE -->
 
-<div class="glass rounded-2xl p-6
-fade-up delay-2">
+        <!-- VM -->
 
-<div class="flex justify-between">
+        <div class="card p-5">
 
-<div>
+            <div class="flex
+                        items-start
+                        justify-between">
 
-<div class="text-xs
-text-gray-500
-uppercase
-tracking-wider">
+                <div>
 
-Databases
+                    <div class="text-xs
+                                uppercase
+                                tracking-wider
+                                text-gray-400">
 
-</div>
+                        Virtual Machines
 
-<div class="stat-number mt-2">
+                    </div>
 
-26
+                    <div class="stat-number mt-3">
+                        124
+                    </div>
 
-</div>
+                    <div class="text-xs
+                                text-green-600
+                                mt-3">
 
-</div>
+                        ● VMware Healthy
 
-<div class="icon-box">
+                    </div>
 
-🗄️
+                </div>
 
-</div>
+                <div class="stat-icon">
+                    ☁
+                </div>
 
-</div>
+            </div>
 
-<div class="mt-5
-text-xs
-text-green-400">
+        </div>
 
-● All Healthy
 
-</div>
+        <!-- BACKUP -->
 
-</div>
+        <div class="card p-5">
 
+            <div class="flex
+                        items-start
+                        justify-between">
 
-<!-- VM -->
+                <div>
 
-<div class="glass rounded-2xl p-6
-fade-up delay-3">
+                    <div class="text-xs
+                                uppercase
+                                tracking-wider
+                                text-gray-400">
 
-<div class="flex justify-between">
+                        Backup Success
 
-<div>
+                    </div>
 
-<div class="text-xs
-text-gray-500
-uppercase
-tracking-wider">
+                    <div class="stat-number mt-3">
+                        98.7%
+                    </div>
 
-Virtual Machines
+                    <div class="text-xs
+                                text-green-600
+                                mt-3">
 
-</div>
+                        ● Last Backup Successful
 
-<div class="stat-number mt-2">
+                    </div>
 
-124
+                </div>
 
-</div>
+                <div class="stat-icon">
+                    💾
+                </div>
 
-</div>
+            </div>
 
-<div class="icon-box">
+        </div>
 
-☁️
+    </div>
 
-</div>
 
-</div>
+    <!-- =====================================================
+         MAIN GRID
+    ====================================================== -->
 
-<div class="mt-5
-text-xs
-text-green-400">
+    <div class="grid
+                grid-cols-1
+                lg:grid-cols-3
+                gap-6">
 
-● VMware Cluster Online
 
-</div>
+        <!-- =================================================
+             LEFT COLUMN
+        ================================================== -->
 
-</div>
+        <div class="lg:col-span-2 space-y-6">
 
 
-<!-- BACKUP -->
+            <!-- INFRASTRUCTURE HEALTH -->
 
-<div class="glass rounded-2xl p-6
-fade-up delay-4">
+            <div class="card p-6">
 
-<div class="flex justify-between">
+                <div class="flex
+                            items-center
+                            justify-between
+                            border-b
+                            border-gray-100
+                            pb-4
+                            mb-6">
 
-<div>
+                    <div>
 
-<div class="text-xs
-text-gray-500
-uppercase
-tracking-wider">
+                        <h2 class="text-lg
+                                   font-bold
+                                   text-gray-900">
 
-Backup Success
+                            Infrastructure Health
 
-</div>
+                        </h2>
 
-<div class="stat-number mt-2">
+                        <p class="text-xs
+                                  text-gray-500
+                                  mt-1">
 
-98.7%
+                            Current resource utilization
 
-</div>
+                        </p>
 
-</div>
+                    </div>
 
-<div class="icon-box">
+                    <span class="badge-green">
 
-💾
+                        <span class="status-dot"></span>
 
-</div>
+                        HEALTHY
 
-</div>
+                    </span>
 
-<div class="mt-5
-text-xs
-text-green-400">
+                </div>
 
-● Last backup successful
 
-</div>
+                <!-- CPU -->
 
-</div>
+                <div class="mb-6">
 
-</section>
+                    <div class="flex
+                                justify-between
+                                mb-2">
 
+                        <span class="text-sm
+                                     font-medium
+                                     text-gray-700">
 
-<!-- ========================================================
-     MAIN GRID
-========================================================= -->
+                            CPU Utilization
 
-<section
-class="grid
-grid-cols-1
-lg:grid-cols-3
-gap-6">
+                        </span>
 
+                        <span class="text-sm
+                                     font-semibold
+                                     text-gray-900">
 
-<!-- ======================================================
-     LEFT
-======================================================= -->
+                            42%
 
-<div class="lg:col-span-2 space-y-6">
+                        </span>
 
+                    </div>
 
-<!-- INFRASTRUCTURE -->
+                    <div class="progress-container">
 
-<div class="glass rounded-2xl p-7">
+                        <div class="progress-red"
+                             style="width:42%">
+                        </div>
 
-<div class="flex
-justify-between
-items-center
-mb-7">
+                    </div>
 
-<div>
+                </div>
 
-<h2 class="text-xl font-bold">
 
-Infrastructure Health
+                <!-- MEMORY -->
 
-</h2>
+                <div class="mb-6">
 
-<p class="text-sm
-text-gray-500
-mt-1">
+                    <div class="flex
+                                justify-between
+                                mb-2">
 
-Live resource utilization
+                        <span class="text-sm
+                                     font-medium
+                                     text-gray-700">
 
-</p>
+                            Memory Utilization
 
-</div>
+                        </span>
 
-<div class="px-3 py-1
-rounded-full
-bg-green-500/10
-border
-border-green-500/20
-text-green-400
-text-xs">
+                        <span class="text-sm
+                                     font-semibold
+                                     text-gray-900">
 
-HEALTHY
+                            61%
 
-</div>
+                        </span>
 
-</div>
+                    </div>
 
+                    <div class="progress-container">
 
-<!-- CPU -->
+                        <div class="progress-blue"
+                             style="width:61%">
+                        </div>
 
-<div class="mb-7">
+                    </div>
 
-<div class="flex justify-between
-text-sm mb-2">
+                </div>
 
-<span class="text-gray-400">
-CPU Utilization
-</span>
 
-<span class="font-bold">
-42%
-</span>
+                <!-- STORAGE -->
 
-</div>
+                <div>
 
-<div class="progress">
+                    <div class="flex
+                                justify-between
+                                mb-2">
 
-<div
-class="progress-bar"
-style="width:42%">
+                        <span class="text-sm
+                                     font-medium
+                                     text-gray-700">
 
-</div>
+                            Storage Utilization
 
-</div>
+                        </span>
 
-</div>
+                        <span class="text-sm
+                                     font-semibold
+                                     text-gray-900">
 
+                            68%
 
-<!-- MEMORY -->
+                        </span>
 
-<div class="mb-7">
+                    </div>
 
-<div class="flex justify-between
-text-sm mb-2">
+                    <div class="progress-container">
 
-<span class="text-gray-400">
-Memory Utilization
-</span>
+                        <div class="progress-red"
+                             style="width:68%">
+                        </div>
 
-<span class="font-bold">
-61%
-</span>
+                    </div>
 
-</div>
+                </div>
 
-<div class="progress">
+            </div>
 
-<div
-class="progress-bar"
-style="width:61%">
 
-</div>
+            <!-- CORE SERVICES -->
 
-</div>
+            <div class="card p-6">
 
-</div>
+                <div class="flex
+                            items-center
+                            justify-between
+                            mb-4">
 
+                    <div>
 
-<!-- STORAGE -->
+                        <h2 class="text-lg
+                                   font-bold
+                                   text-gray-900">
 
-<div>
+                            Core Services
 
-<div class="flex justify-between
-text-sm mb-2">
+                        </h2>
 
-<span class="text-gray-400">
-Storage Utilization
-</span>
+                        <p class="text-xs
+                                  text-gray-500
+                                  mt-1">
 
-<span class="font-bold">
-68%
-</span>
+                            Infrastructure service status
 
-</div>
+                        </p>
 
-<div class="progress">
+                    </div>
 
-<div
-class="progress-bar"
-style="width:68%">
+                </div>
 
-</div>
 
-</div>
+                <div>
 
-</div>
 
-</div>
+                    <!-- VMware -->
 
+                    <div class="service-row">
 
-<!-- ====================================================
-     TERMINAL
-===================================================== -->
+                        <div class="flex items-center gap-3">
 
-<div class="glass rounded-2xl p-6">
+                            <div class="w-9 h-9
+                                        rounded-lg
+                                        bg-gray-100
+                                        flex items-center
+                                        justify-center">
 
-<div class="flex
-justify-between
-items-center
-mb-4">
+                                🖥
 
-<h2 class="font-bold">
+                            </div>
 
-System Activity
+                            <div>
 
-</h2>
+                                <div class="text-sm
+                                            font-semibold">
 
-<div class="flex items-center gap-2">
+                                    VMware vSphere
 
-<div class="status-ring"></div>
+                                </div>
 
-<span class="text-xs
-text-green-400">
+                                <div class="text-xs
+                                            text-gray-500">
 
-LIVE
+                                    vCenter / ESXi
 
-</span>
+                                </div>
 
-</div>
+                            </div>
 
-</div>
+                        </div>
 
+                        <span class="badge-green">
+                            ONLINE
+                        </span>
 
-<div class="terminal
-rounded-xl
-p-5
-text-xs
-md:text-sm
-leading-7">
+                    </div>
 
-<p class="text-gray-500">
 
-[ SYSTEM ]
+                    <!-- Oracle -->
 
-<span class="text-gray-300">
+                    <div class="service-row">
 
-Initializing infrastructure monitoring...
+                        <div class="flex items-center gap-3">
 
-</span>
+                            <div class="w-9 h-9
+                                        rounded-lg
+                                        bg-gray-100
+                                        flex items-center
+                                        justify-center">
 
-<span class="text-green-400">
+                                🗄
 
-OK
+                            </div>
 
-</span>
+                            <div>
 
-</p>
+                                <div class="text-sm
+                                            font-semibold">
 
+                                    Oracle Database
 
-<p class="text-gray-500">
+                                </div>
 
-[ VMWARE ]
+                                <div class="text-xs
+                                            text-gray-500">
 
-<span class="text-gray-300">
+                                    OEM / RMAN
 
-Checking vCenter connectivity...
+                                </div>
 
-</span>
+                            </div>
 
-<span class="text-green-400">
+                        </div>
 
-OK
+                        <span class="badge-green">
+                            ONLINE
+                        </span>
 
-</span>
+                    </div>
 
-</p>
 
+                    <!-- Monitoring -->
 
-<p class="text-gray-500">
+                    <div class="service-row">
 
-[ ORACLE ]
+                        <div class="flex items-center gap-3">
 
-<span class="text-gray-300">
+                            <div class="w-9 h-9
+                                        rounded-lg
+                                        bg-gray-100
+                                        flex items-center
+                                        justify-center">
 
-Oracle Database monitoring...
+                                📊
 
-</span>
+                            </div>
 
-<span class="text-green-400">
+                            <div>
 
-OK
+                                <div class="text-sm
+                                            font-semibold">
 
-</span>
+                                    Infrastructure Monitoring
 
-</p>
+                                </div>
 
+                                <div class="text-xs
+                                            text-gray-500">
 
-<p class="text-gray-500">
+                                    Nagios / OEM
 
-[ RMAN ]
+                                </div>
 
-<span class="text-gray-300">
+                            </div>
 
-Backup verification...
+                        </div>
 
-</span>
+                        <span class="badge-green">
+                            ACTIVE
+                        </span>
 
-<span class="text-green-400">
+                    </div>
 
-OK
 
-</span>
+                    <!-- Security -->
 
-</p>
+                    <div class="service-row">
 
+                        <div class="flex items-center gap-3">
 
-<p class="text-gray-500">
+                            <div class="w-9 h-9
+                                        rounded-lg
+                                        bg-gray-100
+                                        flex items-center
+                                        justify-center">
 
-[ SECURITY ]
+                                🛡
 
-<span class="text-gray-300">
+                            </div>
 
-Security monitoring...
+                            <div>
 
-</span>
+                                <div class="text-sm
+                                            font-semibold">
 
-<span class="text-green-400">
+                                    Security Monitoring
 
-ACTIVE
+                                </div>
 
-</span>
+                                <div class="text-xs
+                                            text-gray-500">
 
-</p>
+                                    Endpoint Protection
 
+                                </div>
 
-<p class="text-green-400 mt-3">
+                            </div>
 
-> SYSTEM READY
+                        </div>
 
-<span class="cursor"></span>
+                        <span class="badge-green">
+                            PROTECTED
+                        </span>
 
-</p>
+                    </div>
 
-</div>
+                </div>
 
-</div>
+            </div>
 
 
-<!-- ====================================================
-     SERVICES
-===================================================== -->
+            <!-- SYSTEM LOG -->
 
-<div class="glass rounded-2xl p-6">
+            <div class="card p-6">
 
-<h2 class="font-bold text-lg mb-5">
+                <div class="flex
+                            justify-between
+                            items-center
+                            mb-4">
 
-Core Services
+                    <div>
 
-</h2>
+                        <h2 class="text-lg
+                                   font-bold">
 
+                            Recent System Activity
 
-<div class="grid
-grid-cols-2
-md:grid-cols-4
-gap-4">
+                        </h2>
 
+                        <p class="text-xs
+                                  text-gray-500
+                                  mt-1">
 
-<div class="bg-white/5
-rounded-xl
-p-4
-border
-border-white/5
-hover:border-red-500/30
-transition">
+                            Latest infrastructure events
 
-<div class="text-2xl mb-2">
-⚙️
-</div>
+                        </p>
 
-<div class="text-sm font-semibold">
-VMware
-</div>
+                    </div>
 
-<div class="text-xs
-text-green-400
-mt-1">
+                    <span class="text-xs
+                                 text-gray-400">
 
-● Online
+                        LIVE
 
-</div>
+                    </span>
 
-</div>
+                </div>
 
 
-<div class="bg-white/5
-rounded-xl
-p-4
-border
-border-white/5
-hover:border-red-500/30
-transition">
+                <div class="terminal p-5
+                            text-xs
+                            leading-7">
 
-<div class="text-2xl mb-2">
-🛢️
-</div>
+                    <div>
 
-<div class="text-sm font-semibold">
-Oracle
-</div>
+                        <span class="text-gray-500">
+                            [INFO]
+                        </span>
 
-<div class="text-xs
-text-green-400
-mt-1">
+                        vCenter connectivity verified
 
-● Online
+                        <span class="text-green-400">
+                            [OK]
+                        </span>
 
-</div>
+                    </div>
 
-</div>
+                    <div>
 
+                        <span class="text-gray-500">
+                            [INFO]
+                        </span>
 
-<div class="bg-white/5
-rounded-xl
-p-4
-border
-border-white/5
-hover:border-red-500/30
-transition">
+                        Oracle OEM monitoring active
 
-<div class="text-2xl mb-2">
-📡
-</div>
+                        <span class="text-green-400">
+                            [OK]
+                        </span>
 
-<div class="text-sm font-semibold">
-Monitoring
-</div>
+                    </div>
 
-<div class="text-xs
-text-green-400
-mt-1">
+                    <div>
 
-● Active
+                        <span class="text-gray-500">
+                            [INFO]
+                        </span>
 
-</div>
+                        RMAN backup verification completed
 
-</div>
+                        <span class="text-green-400">
+                            [OK]
+                        </span>
 
+                    </div>
 
-<div class="bg-white/5
-rounded-xl
-p-4
-border
-border-white/5
-hover:border-red-500/30
-transition">
+                    <div>
 
-<div class="text-2xl mb-2">
-🛡️
-</div>
+                        <span class="text-gray-500">
+                            [INFO]
+                        </span>
 
-<div class="text-sm font-semibold">
-Security
-</div>
+                        Infrastructure health check completed
 
-<div class="text-xs
-text-green-400
-mt-1">
+                        <span class="text-green-400">
+                            [OK]
+                        </span>
 
-● Protected
+                    </div>
 
-</div>
+                </div>
 
-</div>
+            </div>
 
-</div>
+        </div>
 
-</div>
 
-</div>
+        <!-- =================================================
+             RIGHT COLUMN
+        ================================================== -->
 
+        <div class="space-y-6">
 
-<!-- ======================================================
-     RIGHT
-======================================================= -->
 
-<div class="space-y-6">
+            <!-- PROFILE -->
 
+            <div class="card p-6">
 
-<!-- PROFILE -->
+                <div class="text-xs
+                            uppercase
+                            tracking-wider
+                            text-gray-400
+                            mb-5">
 
-<div class="glass rounded-2xl p-6">
+                    System User
 
-<div class="text-xs
-uppercase
-tracking-widest
-text-gray-500
-mb-5">
+                </div>
 
-System Administrator
 
-</div>
+                <div class="flex
+                            items-center
+                            gap-4">
 
+                    <div class="profile-avatar">
+                        PW
+                    </div>
 
-<div class="flex
-items-center
-gap-4">
+                    <div>
 
-<div
-class="w-16
-h-16
-rounded-2xl
-bg-gradient-to-br
-from-red-500
-to-red-900
-flex
-items-center
-justify-center
-text-xl
-font-bold
-shadow-lg
-shadow-red-900/30">
+                        <h3 class="font-bold
+                                   text-gray-900">
 
-PW
+                            Prasad Wanigasooriya
 
-</div>
+                        </h3>
 
+                        <p class="text-xs
+                                  text-gray-500
+                                  mt-1">
 
-<div>
+                            IT & Network Officer - A9
 
-<div class="font-bold
-text-lg">
+                        </p>
 
-Prasad Wanigasooriya
+                    </div>
 
-</div>
+                </div>
 
-<div class="text-sm
-text-gray-500">
 
-IT & Network Officer - A9
+                <div class="mt-5
+                            pt-5
+                            border-t
+                            border-gray-100">
 
-</div>
+                    <div class="grid grid-cols-2 gap-4">
 
-</div>
+                        <div>
 
-</div>
+                            <div class="text-[10px]
+                                        uppercase
+                                        text-gray-400">
 
+                                Section
 
-<div class="mt-6
-grid
-grid-cols-2
-gap-3">
+                            </div>
 
+                            <div class="text-sm
+                                        font-semibold
+                                        mt-1">
 
-<div class="bg-white/5
-rounded-xl
-p-3">
+                                Systems
 
-<div class="text-[10px]
-text-gray-500
-uppercase">
+                            </div>
 
-Section
+                        </div>
 
-</div>
+                        <div>
 
-<div class="text-sm
-font-semibold
-mt-1">
+                            <div class="text-[10px]
+                                        uppercase
+                                        text-gray-400">
 
-Systems
+                                Status
 
-</div>
+                            </div>
 
-</div>
+                            <div class="text-sm
+                                        font-semibold
+                                        text-green-600
+                                        mt-1">
 
+                                Active
 
-<div class="bg-white/5
-rounded-xl
-p-3">
+                            </div>
 
-<div class="text-[10px]
-text-gray-500
-uppercase">
+                        </div>
 
-Status
+                    </div>
 
-</div>
+                </div>
 
-<div class="text-sm
-font-semibold
-text-green-400
-mt-1">
+            </div>
 
-Active
 
-</div>
+            <!-- ENVIRONMENT -->
 
-</div>
+            <div class="card p-6">
 
-</div>
+                <h2 class="text-lg
+                           font-bold
+                           text-gray-900
+                           mb-5">
 
-</div>
+                    Environment
 
+                </h2>
 
-<!-- ENVIRONMENT -->
 
-<div class="glass rounded-2xl p-6">
+                <div class="space-y-5">
 
-<h2 class="font-bold text-lg mb-5">
 
-Environment
+                    <div>
 
-</h2>
+                        <div class="text-[10px]
+                                    uppercase
+                                    tracking-wider
+                                    text-gray-400">
 
+                            AWS Region
 
-<div class="space-y-5">
+                        </div>
 
+                        <div class="text-sm
+                                    font-semibold
+                                    mt-1">
 
-<div>
+                            {{ aws_region }}
 
-<div class="text-[10px]
-uppercase
-tracking-widest
-text-gray-500">
+                        </div>
 
-AWS Region
+                    </div>
 
-</div>
 
-<div class="font-semibold mt-1">
+                    <div>
 
-{{ aws_region }}
+                        <div class="text-[10px]
+                                    uppercase
+                                    tracking-wider
+                                    text-gray-400">
 
-</div>
+                            EB Environment
 
-</div>
+                        </div>
 
+                        <div class="text-sm
+                                    font-semibold
+                                    mt-1">
 
-<div>
+                            {{ env_name }}
 
-<div class="text-[10px]
-uppercase
-tracking-widest
-text-gray-500">
+                        </div>
 
-Environment
+                    </div>
 
-</div>
 
-<div class="font-semibold mt-1">
+                    <div>
 
-{{ env_name }}
+                        <div class="text-[10px]
+                                    uppercase
+                                    tracking-wider
+                                    text-gray-400">
 
-</div>
+                            Application
 
-</div>
+                        </div>
 
+                        <div class="text-sm
+                                    font-semibold
+                                    mt-1">
 
-<div>
+                            Flask / Gunicorn
 
-<div class="text-[10px]
-uppercase
-tracking-widest
-text-gray-500">
+                        </div>
 
-Runtime
+                    </div>
 
-</div>
 
-<div class="font-semibold mt-1">
+                    <div>
 
-Python / Flask / Gunicorn
+                        <div class="text-[10px]
+                                    uppercase
+                                    tracking-wider
+                                    text-gray-400">
 
-</div>
+                            Server Time UTC
 
-</div>
+                        </div>
 
-</div>
+                        <div id="server-time"
+                             class="text-sm
+                                    font-semibold
+                                    mt-1">
 
-</div>
+                            {{ current_time }}
 
+                        </div>
 
-<!-- ACTIONS -->
+                    </div>
 
-<div class="glass rounded-2xl p-6">
+                </div>
 
-<h2 class="font-bold mb-4">
+            </div>
 
-Quick Actions
 
-</h2>
+            <!-- QUICK ACTIONS -->
 
+            <div class="card p-6">
 
-<a
-href="/health"
-class="red-button
-block
-text-center
-rounded-xl
-py-3
-font-semibold
-text-sm">
+                <h2 class="text-lg
+                           font-bold
+                           text-gray-900
+                           mb-4">
 
-RUN HEALTH CHECK
+                    Quick Actions
 
-</a>
+                </h2>
 
 
-<a
-href="{{ github_url }}"
-target="_blank"
-class="block
-mt-3
-text-center
-rounded-xl
-py-3
-font-semibold
-text-sm
-border
-border-white/10
-bg-white/5
-hover:bg-white/10
-transition">
+                <a href="/health"
+                   class="primary-button">
 
-SOURCE CODE
+                    RUN SYSTEM HEALTH CHECK
 
-</a>
+                </a>
 
-</div>
 
-</div>
+                <a href="{{ github_url }}"
+                   target="_blank"
+                   class="secondary-button mt-3">
 
-</section>
+                    VIEW SOURCE CODE
+
+                </a>
+
+            </div>
+
+
+            <!-- SYSTEM INFORMATION -->
+
+            <div class="card p-6">
+
+                <h2 class="text-lg
+                           font-bold
+                           text-gray-900
+                           mb-4">
+
+                    System Information
+
+                </h2>
+
+
+                <div class="space-y-3
+                            text-sm">
+
+
+                    <div class="flex
+                                justify-between">
+
+                        <span class="text-gray-500">
+                            Python
+                        </span>
+
+                        <span class="font-medium">
+                            3.x
+                        </span>
+
+                    </div>
+
+
+                    <div class="flex
+                                justify-between">
+
+                        <span class="text-gray-500">
+                            Framework
+                        </span>
+
+                        <span class="font-medium">
+                            Flask 3.x
+                        </span>
+
+                    </div>
+
+
+                    <div class="flex
+                                justify-between">
+
+                        <span class="text-gray-500">
+                            Server
+                        </span>
+
+                        <span class="font-medium">
+                            Gunicorn
+                        </span>
+
+                    </div>
+
+
+                    <div class="flex
+                                justify-between">
+
+                        <span class="text-gray-500">
+                            Platform
+                        </span>
+
+                        <span class="font-medium">
+                            AWS EB
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </main>
 
 
-<!-- ========================================================
+<!-- =========================================================
      FOOTER
-========================================================= -->
+========================================================== -->
 
-<footer
-class="border-t
-border-white/10
-mt-10">
+<footer>
 
-<div class="max-w-7xl
-mx-auto
-px-6
-py-6">
+    <div class="max-w-7xl mx-auto px-5 lg:px-8 py-5">
 
-<div class="flex
-flex-col
-md:flex-row
-justify-between
-gap-3
-text-xs
-text-gray-500">
+        <div class="flex
+                    flex-col
+                    md:flex-row
+                    md:justify-between
+                    gap-2
+                    text-xs">
 
-<div>
+            <div>
+                SLT-MOBITEL Enterprise IT Systems Portal
+            </div>
 
-SLT-MOBITEL Enterprise IT Infrastructure
+            <div>
+                Flask · Python · Gunicorn · AWS Elastic Beanstalk
+            </div>
 
-</div>
+            <div>
+                © 2026 Prasad Wanigasooriya
+            </div>
 
-<div>
+        </div>
 
-AWS Elastic Beanstalk · Flask · Python
-
-</div>
-
-<div>
-
-Prasad Wanigasooriya · 2026
-
-</div>
-
-</div>
-
-</div>
+    </div>
 
 </footer>
 
 
-<!-- ========================================================
-     JAVASCRIPT
-========================================================= -->
+<!-- =========================================================
+     LIVE CLOCK
+========================================================== -->
 
 <script>
-
-/* =========================================================
-   LIVE CLOCK
-========================================================= */
 
 function updateClock() {
 
     const now = new Date();
 
-    const time =
+    const formatted =
         now.toISOString()
         .replace("T", " ")
         .substring(0, 19);
 
     document.getElementById(
         "server-time"
-    ).textContent = time + " UTC";
+    ).textContent = formatted + " UTC";
 }
 
 updateClock();
@@ -1833,53 +1683,22 @@ setInterval(
     1000
 );
 
-
-/* =========================================================
-   MOUSE GLOW EFFECT
-========================================================= */
-
-document.addEventListener(
-    "mousemove",
-    function(event) {
-
-        const x =
-            event.clientX /
-            window.innerWidth * 100;
-
-        const y =
-            event.clientY /
-            window.innerHeight * 100;
-
-        document.body.style.setProperty(
-            "--mouse-x",
-            x + "%"
-        );
-
-        document.body.style.setProperty(
-            "--mouse-y",
-            y + "%"
-        );
-
-    }
-);
-
 </script>
 
 
 </body>
-
 </html>
 """
 
 
 # ============================================================
-# HOME
+# HOME ROUTE
 # ============================================================
 
 @application.route("/")
 def home():
 
-    now = datetime.now(
+    current_time = datetime.now(
         timezone.utc
     ).strftime(
         "%Y-%m-%d %H:%M:%S"
@@ -1897,7 +1716,7 @@ def home():
 
     return render_template_string(
         HTML_TEMPLATE,
-        current_time=now,
+        current_time=current_time,
         github_url=GITHUB_REPO_URL,
         env_name=env_name,
         aws_region=aws_region
@@ -1905,7 +1724,7 @@ def home():
 
 
 # ============================================================
-# HEALTH API
+# HEALTH CHECK
 # ============================================================
 
 @application.route("/health")
@@ -1916,7 +1735,7 @@ def health_check():
         "status": "nominal",
 
         "application":
-            "SLT-MOBITEL Enterprise IT Dashboard",
+            "SLT-MOBITEL IT Systems Dashboard",
 
         "user":
             "Prasad Wanigasooriya",
@@ -1945,7 +1764,7 @@ def health_check():
 
 
 # ============================================================
-# START APPLICATION
+# APPLICATION START
 # ============================================================
 
 if __name__ == "__main__":
